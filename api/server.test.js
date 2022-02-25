@@ -129,10 +129,11 @@ describe('testing API endpoints', () => {
       .post('/api/auth/login')
       .send({ username: 'Peter', password: '1234' });
     // Fetch Jokes
-    let jokes = await request(server)
+    let res = await request(server)
       .get('/api/jokes')
       .auth('Authorization', user.token);
-    expect(jokes).toBeInstanceOf(Array);
+    let data = JSON.parse(res.body);
+      expect(data).toBeInstanceOf(Array);
   });
 
 });
