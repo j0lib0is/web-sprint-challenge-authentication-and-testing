@@ -85,12 +85,4 @@ router.post('/login', validateFields, checkUser, (req, res, next) => {
   */
 });
 
-router.use((err, req, res, next) => {
-  res.status(err.status || 500).json({
-    customError: 'This is embarrasing... something went wrong.',
-    message: err.message,
-    stack: err.stack
-  });
-});
-
 module.exports = router;

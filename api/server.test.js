@@ -131,9 +131,8 @@ describe('testing API endpoints', () => {
     // Fetch Jokes
     let res = await request(server)
       .get('/api/jokes')
-      // .set('Authorization', `Bearer ${user.body.token}`);
       .set('Authorization', `Bearer 1234`);
-    expect(res.error.status).toBe(401);
+    expect(res.body.message).toBe('token invalid');
   });
 
 });
