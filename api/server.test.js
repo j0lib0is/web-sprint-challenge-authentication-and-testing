@@ -133,7 +133,7 @@ describe('testing API endpoints', () => {
       .get('/api/jokes')
       // .set('Authorization', `Bearer ${user.body.token}`);
       .set('Authorization', `Bearer 1234`);
-    expect(res.body).toEqual({});
+    expect(res.error.status).toBe(401);
   });
 
 });
