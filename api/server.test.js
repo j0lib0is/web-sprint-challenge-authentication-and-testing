@@ -119,4 +119,20 @@ describe('testing API endpoints', () => {
     expect(error.body).toHaveProperty('message', 'invalid credentials');
   });
 
+  test('[GET] /api/jokes', async () => {
+    // Create User
+    await request(server)
+      .post('/api/auth/register')
+      .send({ username: 'Peter', password: '1234' });
+    // Login
+    let user = await request(server)
+      .post('/api/auth/login')
+      .send({ username: 'Peter', password: '1234' });
+    // Fetch Jokes
+    let jokes = await request(server)
+      .get('/api/jokes')
+      .auth('Authorization', user.token);
+    expect(jokes).toBeInstanceOf(Array);
+  });
+
 });
