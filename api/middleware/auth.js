@@ -1,10 +1,10 @@
 const Users = require('../users/users-model');
 
-const validateRegistration = async (req, res, next) => {
+const validateFields = async (req, res, next) => {
 	const { username, password } = req.body;
 
 	if (!username || !password) {
-		next({status: 401, message: 'username and password required'});
+		next({status: 401, message: 'username and password required' });
 	} else {
 		next();
 	}
@@ -15,7 +15,7 @@ const checkUsername = async (req, res, next) => {
 	const existingUser = await Users.getBy({ username }).first();
 
 	if (existingUser) {
-		next({ status: 401, message: 'username taken'});
+		next({ status: 401, message: 'username taken' });
 	} else {
 		next();
 	}
@@ -29,12 +29,12 @@ const checkUser = async (req, res, next) => {
 		req.user = existingUser;
 		next();
 	} else {
-		next({ status: 401, message: 'invalid credentials'});
+		next({ status: 401, message: 'invalid credentials' });
 	}
 };
 
 module.exports = {
-	validateRegistration,
+	validateFields,
 	checkUsername,
 	checkUser
 };

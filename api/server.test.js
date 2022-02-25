@@ -20,22 +20,66 @@ beforeEach(async () => {
   await db('users').truncate();
 })
 
-describe('testing API endpoints', () => {
+describe('testing user model', () => {
 
-  // test('[GET] /api/jokes', async () => {
-  //   const jokes = await request(server).get('/api/jokes');
-  //   expect(jokes.body).toBeInstanceOf(Array);
-  // });
-
-  test('[POST] /api/auth/register', async () => {
-    // POST REQUEST
-    let user = await request(server)
-      .post('/api/auth/register')
-      .send({ username: 'Jack', password: '1234' });
-    expect(user.body).toHaveProperty('username', 'Jack');
+  test('table defaults to empty', async () => {
+    const users = await db('users');
+    expect(users).toHaveLength(0);
   });
 
-  test('[POST] /api/auth/login', async () => {
+  test('can add user', async () => {
+    const user = await Users.add({ username: 'Natasha', password: '1234' });
+    expect(user).toHaveProperty('username', 'Natasha');
+  });
+
+  test('can fetch user', async () => {
+    // Add user
+    const {id} = await Users.add({ username: 'Tony', password: '1234' });
+    // Fetch user
+    const user = await Users.getById(id);
+    expect(user).toHaveProperty('username', 'Tony');
+  });
+  
+  test('can find user by username', async () => {
+    // Add user
+    const {username} = await Users.add({ username: 'Bruce', password: '1234' });
+    // Find user
+    const users = await Users.getBy({username});
+    expect(users).toHaveLength(1);
+    expect(users[0]).toHaveProperty('username', 'Bruce');
+  });
+
+})
+
+describe('testing API endpoints', () => {
+
+  test('[POST] /api/auth/register - successful registration', async () => {
+    let user = await request(server)
+      .post('/api/auth/register')
+      .send({ username: 'Barry', password: '1234' });
+    expect(user.body).toHaveProperty('username', 'Barry');
+  });
+  
+  test('[POST] /api/auth/register - missing field', async () => {
+    let error = await request(server)
+      .post('/api/auth/register')
+      .send({ username: 'Clark' });
+    expect(error.body).toHaveProperty('message', 'username and password required');
+  });
+
+  test('[POST] /api/auth/register - duplicate username', async () => {
+    // Create User
+    await request(server)
+      .post('/api/auth/register')
+      .send({ username: 'Clint', password: '1234' });
+    // Attempt to create a user with a duplicate username
+    let error = await request(server)
+      .post('/api/auth/register')
+      .send({ username: 'Clint', password: '1234' });
+    expect(error.body).toHaveProperty('message', 'username taken');
+  });
+
+  test('[POST] /api/auth/login - successful login', async () => {
     // Create User
     let user = await request(server)
       .post('/api/auth/register')
@@ -49,6 +93,30 @@ describe('testing API endpoints', () => {
       .post('/api/auth/login')
       .send({ username: 'Jack', password: '1234' });
     expect(welcome.body).toHaveProperty('message', 'welcome, Jack');
+  });
+  
+  test('[POST] /api/auth/login - missing field', async () => {
+    // Create User
+    let user = await request(server)
+      .post('/api/auth/register')
+      .send({ username: 'Steve', password: '1234' });
+    // Login with incorrect User Credentials
+    let error = await request(server)
+      .post('/api/auth/login')
+      .send({ username: 'Steve' });
+    expect(error.body).toHaveProperty('message', 'username and password required');
+  });
+  
+  test('[POST] /api/auth/login - wrong password', async () => {
+    // Create User
+    let user = await request(server)
+      .post('/api/auth/register')
+      .send({ username: 'Steve', password: '1234' });
+    // Login with incorrect User Credentials
+    let error = await request(server)
+      .post('/api/auth/login')
+      .send({ username: 'Steve', password: '12345' });
+    expect(error.body).toHaveProperty('message', 'invalid credentials');
   });
 
 });

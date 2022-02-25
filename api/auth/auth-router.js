@@ -1,11 +1,11 @@
 const router = require('express').Router();
 const Users = require('../users/users-model');
-const { validateRegistration, checkUsername, checkUser } = require('../middleware/auth');
+const { validateFields, checkUsername, checkUser } = require('../middleware/auth');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { JWT_SECRET } = require('../secrets/index');
 
-router.post('/register', validateRegistration, checkUsername, (req, res, next) => {
+router.post('/register', validateFields, checkUsername, (req, res, next) => {
   const user = req.body;
   const hash = bcrypt.hashSync(user.password, 12);
   user.password = hash;
@@ -51,7 +51,7 @@ function generateToken(user) {
   return jwt.sign(payload, JWT_SECRET, { expiresIn: '1d' });
 }
 
-router.post('/login', checkUser, (req, res, next) => {
+router.post('/login', validateFields, checkUser, (req, res, next) => {
   const { username, password } = req.body;
 
   if (bcrypt.compareSync(password, req.user.password)) {
@@ -83,6 +83,14 @@ router.post('/login', checkUser, (req, res, next) => {
     4- On FAILED login due to `username` not existing in the db, or `password` being incorrect,
       the response body should include a string exactly as follows: "invalid credentials".
   */
+});
+
+router.use((err, req, res, next) => {
+  res.status(err.status || 500).json({
+    customError: 'This is embarrasing... something went wrong.',
+    message: err.message,
+    stack: err.stack
+  });
 });
 
 module.exports = router;
